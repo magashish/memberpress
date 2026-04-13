@@ -1,0 +1,990 @@
+<?php
+
+if (!defined('ABSPATH')) {
+    die('You are not allowed to call this page directly.');
+}
+
+class MeprCoupon extends MeprCptModel
+{
+    /**
+     * Meta key for storing whether the coupon can be used on upgrades.
+     *
+     * @var string
+     */
+    public static $use_on_upgrades_str                = '_mepr_coupons_use_on_upgrades';
+
+    /**
+     * Meta key for storing whether the coupon has a start date.
+     *
+     * @var string
+     */
+    public static $should_start_str                   = '_mepr_coupons_should_start';
+
+    /**
+     * Meta key for storing whether the coupon has an expiry date.
+     *
+     * @var string
+     */
+    public static $should_expire_str                  = '_mepr_coupons_should_expire';
+
+    /**
+     * Meta key for storing the coupon start date timestamp.
+     *
+     * @var string
+     */
+    public static $starts_on_str                      = '_mepr_coupons_starts_on';
+
+    /**
+     * Meta key for storing the coupon expiry date timestamp.
+     *
+     * @var string
+     */
+    public static $expires_on_str                     = '_mepr_coupons_expires_on';
+
+    /**
+     * Meta key for storing the coupon usage count.
+     *
+     * @var string
+     */
+    public static $usage_count_str                    = '_mepr_coupons_usage_count';
+
+    /**
+     * Meta key for storing the maximum usage amount for the coupon.
+     *
+     * @var string
+     */
+    public static $usage_amount_str                   = '_mepr_coupons_usage_amount';
+
+    /**
+     * Meta key for storing the coupon discount type.
+     *
+     * @var string
+     */
+    public static $discount_type_str                  = '_mepr_coupons_discount_type';
+
+    /**
+     * Meta key for storing the coupon discount mode.
+     *
+     * @var string
+     */
+    public static $discount_mode_str                  = '_mepr_coupons_discount_mode';
+
+    /**
+     * Meta key for storing the coupon discount amount.
+     *
+     * @var string
+     */
+    public static $discount_amount_str                = '_mepr_coupons_discount_amount';
+
+    /**
+     * Meta key for storing the products the coupon is valid.
+     *
+     * @var string
+     */
+    public static $valid_products_str                 = '_mepr_coupons_valid_products';
+
+    /**
+     * Meta key for storing the trial period days for the coupon.
+     *
+     * @var string
+     */
+    public static $trial_days_str                     = '_mepr_coupons_trial_days';
+
+    /**
+     * Meta key for storing the trial amount for the coupon.
+     *
+     * @var string
+     */
+    public static $trial_amount_str                   = '_mepr_coupons_trial_amount';
+
+    /**
+     * Meta key for storing the last run time of coupon expiration check.
+     *
+     * @var string
+     */
+    public static $last_run_str                       = 'mepr_coupons_expire_last_run';
+
+    /**
+     * Meta key for the coupon nonce.
+     *
+     * @var string
+     */
+    public static $nonce_str                          = 'mepr_coupons_nonce';
+
+    /**
+     * Meta key for storing the start month of the coupon.
+     *
+     * @var string
+     */
+    public static $starts_on_month_str                = 'mepr_coupons_start_month';
+
+    /**
+     * Meta key for storing the start day of the coupon.
+     *
+     * @var string
+     */
+    public static $starts_on_day_str                  = 'mepr_coupons_start_day';
+
+    /**
+     * Meta key for storing the start year of the coupon.
+     *
+     * @var string
+     */
+    public static $starts_on_year_str                 = 'mepr_coupons_start_year';
+
+    /**
+     * Meta key for storing the expiry month of the coupon.
+     *
+     * @var string
+     */
+    public static $expires_on_month_str               = 'mepr_coupons_ex_month';
+
+    /**
+     * Meta key for storing the expiry day of the coupon.
+     *
+     * @var string
+     */
+    public static $expires_on_day_str                 = 'mepr_coupons_ex_day';
+
+    /**
+     * Meta key for storing the expiry year of the coupon.
+     *
+     * @var string
+     */
+    public static $expires_on_year_str                = 'mepr_coupons_ex_year';
+
+    /**
+     * Meta key for storing the expiry timezone of the coupon.
+     *
+     * @var string
+     */
+    public static $expires_on_timezone_str            = '_mepr_coupons_expire_timezone';
+
+    /**
+     * Meta key for storing the start timezone of the coupon.
+     *
+     * @var string
+     */
+    public static $start_on_timezone_str              = '_mepr_coupons_start_timezone';
+
+    /**
+     * Meta key for storing the first payment discount type.
+     *
+     * @var string
+     */
+    public static $first_payment_discount_type_str    = '_mepr_coupons_first_payment_discount_type';
+
+    /**
+     * Meta key for storing the first payment discount amount.
+     *
+     * @var string
+     */
+    public static $first_payment_discount_amount_str  = '_mepr_coupons_first_payment_discount_amount';
+
+    /**
+     * Meta key for storing the per-user usage count limit.
+     *
+     * @var string
+     */
+    public static $usage_per_user_count_str           = '_mepr_coupons_usage_per_user_count';
+
+    /**
+     * Meta key for storing the per-user usage count timeframe.
+     *
+     * @var string
+     */
+    public static $usage_per_user_count_timeframe_str = '_mepr_coupons_usage_per_user_count_timeframe';
+
+    /**
+     * Meta key for storing the membership specific discounts.
+     *
+     * @var string
+     */
+    public static $is_membership_specific_str         = '_mepr_coupons_is_membership_specific';
+
+    /**
+     * Meta key for storing the membership specific discounts.
+     *
+     * @var string
+     */
+    public static $membership_specific_str            = '_mepr_coupons_membership_specific';
+
+    /**
+     * Custom post type name for coupons.
+     *
+     * @var string
+     */
+    public static $cpt = 'memberpresscoupon';
+
+    /**
+     * Available discount types for coupons.
+     *
+     * @var array
+     */
+    public $discount_types;
+
+    /**
+     * Available timeframe types for per-user coupon usage.
+     *
+     * @var array
+     */
+    public $timeframe_types;
+
+    /**
+     * Constructor for the MeprCoupon class.
+     *
+     * @param mixed $obj Optional. The object to initialize the coupon with.
+     */
+    public function __construct($obj = null)
+    {
+        $this->discount_types  = ['percent', 'dollar'];
+        $this->timeframe_types = MeprCouponsHelper::get_available_time_frame();
+        $this->load_cpt(
+            $obj,
+            self::$cpt,
+            [
+                'use_on_upgrades'                => false,
+                'should_start'                   => false,
+                'should_expire'                  => false,
+                'starts_on'                      => null,
+                'expires_on'                     => null,
+                'usage_count'                    => 0,
+                'usage_amount'                   => 0,
+                'discount_type'                  => 'percent',
+                'discount_amount'                => 0.00,
+                'first_payment_discount_type'    => 'percent',
+                'first_payment_discount_amount'  => 0.00,
+                'valid_products'                 => [],
+                'discount_mode'                  => 'standard',
+                'trial_days'                     => 0,
+                'trial_amount'                   => 0.00,
+                'expires_on_timezone'            => 0,
+                'start_on_timezone'              => 0,
+                'usage_per_user_count'           => 0,
+                'usage_per_user_count_timeframe' => 'lifetime',
+                'is_membership_specific'         => false,
+                'membership_specific'            => [],
+            ]
+        );
+    }
+
+    /**
+     * Validate the coupon's properties.
+     *
+     * @return void
+     */
+    public function validate()
+    {
+        $this->validate_is_bool($this->use_on_upgrades, 'use_on_upgrades');
+        $this->validate_is_bool($this->should_start, 'should_start');
+        $this->validate_is_bool($this->should_expire, 'should_expire');
+        if ($this->should_start) {
+            $this->validate_is_timestamp($this->starts_on, 'starts_on');
+        }
+        if ($this->should_expire) {
+            $this->validate_is_timestamp($this->expires_on, 'expires_on');
+        }
+        $this->validate_is_numeric($this->usage_count, 0, null, 'usage_count');
+        $this->validate_is_numeric($this->usage_amount, 0, null, 'usage_amount');
+        $this->validate_is_array($this->valid_products, 'valid_products');
+
+        $this->validate_is_bool($this->is_membership_specific, 'is_membership_specific');
+        $this->validate_is_array($this->membership_specific, 'membership_specific');
+
+        if (! $this->is_membership_specific) {
+            $this->validate_discount_properties($this);
+        } else {
+            // Membership specific settings.
+            foreach ($this->membership_specific as $membership_id => $settings) {
+                $this->validate_discount_properties((object)$settings, '_for_membership_' . $membership_id);
+            }
+        }
+
+        $this->validate_is_numeric($this->usage_per_user_count, 0, null, 'usage_per_user_count');
+        $this->validate_is_in_array($this->usage_per_user_count_timeframe, array_keys($this->timeframe_types), 'usage_per_user_count_timeframe');
+    }
+
+    /**
+     * Validate discount properties.
+     *
+     * @param  object $object               The object to validate.
+     * @param  string $error_message_suffix The suffix to add to the error message.
+     * @return void
+     */
+    private function validate_discount_properties($object, $error_message_suffix = '')
+    {
+        $this->validate_is_in_array($object->discount_type, $this->discount_types, 'discount_type' . $error_message_suffix);
+        $this->validate_is_currency($object->discount_amount, 0, null, 'discount_amount' . $error_message_suffix);
+
+        if ($object->discount_mode === 'first-payment') {
+            $this->validate_is_currency($object->first_payment_discount_amount, 0, null, 'first_payment_discount_amount' . $error_message_suffix);
+            $this->validate_is_in_array($object->first_payment_discount_type, $this->discount_types, 'first_payment_discount_type' . $error_message_suffix);
+        } elseif ($object->discount_mode === 'trial-override') {
+            $this->validate_is_numeric($object->trial_days, 0, null, 'trial_days' . $error_message_suffix);
+            $this->validate_is_currency($object->trial_amount, 0, null, 'trial_amount' . $error_message_suffix);
+        }
+    }
+
+    /**
+     * Get the formatted list of products associated with the coupon.
+     *
+     * @return array The formatted list of product titles.
+     */
+    public function get_formatted_products()
+    {
+        $formatted_array = [];
+
+        if (!empty($this->valid_products)) {
+            foreach ($this->valid_products as $p) {
+                $product = get_post($p);
+
+                if ($product) {
+                    $formatted_array[] = $product->post_title;
+                }
+            }
+        } else {
+            $formatted_array[] = __('None Selected', 'memberpress');
+        }
+
+        return $formatted_array;
+    }
+
+    /**
+     * Get all active coupons.
+     *
+     * @return MeprCoupon[] An array of active coupon objects.
+     */
+    public static function get_all_active_coupons()
+    {
+        return MeprCptModel::all('MeprCoupon');
+    }
+
+    /**
+     * Get a coupon by its code.
+     *
+     * @param string  $code          The coupon code.
+     * @param boolean $ignore_status Optional. Whether to ignore the coupon's status. Default false.
+     *
+     * @return MeprCoupon|false The coupon object or false if not found.
+     */
+    public static function get_one_from_code($code, $ignore_status = false)
+    {
+        global $wpdb;
+
+        if ($ignore_status) {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            $id = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT ID FROM {$wpdb->posts} WHERE post_title = %s AND post_type = %s",
+                    $code,
+                    self::$cpt
+                )
+            );
+        } else {
+            // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            $id = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT ID FROM {$wpdb->posts} WHERE post_title = %s AND post_type = %s AND post_status = 'publish'",
+                    $code,
+                    self::$cpt
+                )
+            );
+        }
+
+        if (!$id) {
+            return false;
+        } else {
+            return new MeprCoupon($id);
+        }
+    }
+
+    /**
+     * Whether this coupon can be used for upgrades
+     *
+     * @return boolean True if the coupon is valid, false otherwise.
+     */
+    public function can_use_on_upgrades()
+    {
+        return (bool) $this->use_on_upgrades;
+    }
+
+    /**
+     * Whether this coupon is valid for a given product and user.
+     *
+     * @param integer $product_id The ID of the product.
+     * @param integer $user_id    Optional. The ID of the user. Default 0.
+     *
+     * @return boolean True if the coupon is valid, false otherwise.
+     */
+    public function is_valid($product_id, $user_id = 0)
+    {
+        // Coupon has reached its usage limit (remember 0 = unlimited).
+        if ($this->usage_amount > 0 and $this->usage_count >= $this->usage_amount) {
+            return false;
+        }
+
+        // Check if per user coupon usage is enabled.
+        if (MeprUtils::is_user_logged_in() && $this->is_usage_per_user_enabled()) {
+            $user_id    = 0 >= (int) $user_id ? get_current_user_id() : $user_id;
+            $user_usage = $this->get_user_coupon_usage($user_id);
+            if (false === $user_usage || $user_usage >= $this->usage_per_user_count) {
+                return false;
+            }
+        }
+
+        $expire_timestamp = MeprCouponsHelper::convert_timestamp_to_tz($this->expires_on, $this->expires_on_timezone); // Converted expiry UTC timestamp to selected timezone stamp.
+
+        // Coupon has expired
+        // This doesn't really need to be here but will be more accurate
+        // than waiting every 12 hours for the expiring cron to run.
+        if ($this->should_expire and $expire_timestamp <= time()) {
+            return false;
+        }
+
+        $start_timestamp = MeprCouponsHelper::convert_timestamp_to_tz($this->starts_on, $this->start_on_timezone); // Converted start UTC timestamp to selected timezone stamp.
+
+        // Coupon hasn't started.
+        if ($this->should_start and $start_timestamp > time()) {
+            return false;
+        }
+
+        // Coupon code is not valid for this membership.
+        if (!in_array((int) $product_id, array_map('intval', $this->valid_products), true)) {
+            return false;
+        }
+
+        // Can't be used on upgrades, so make sure we're not trying to apply to an upgrade.
+        if (MeprUtils::is_user_logged_in() && ! $this->can_use_on_upgrades()) {
+            $prd = new MeprProduct($product_id);
+            if ($prd->is_upgrade_or_downgrade_for(get_current_user_id())) {
+                return false;
+            }
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_is_valid', true, $this, $product_id); // If we made it here, the coupon is good.
+    }
+
+    /**
+     * Whether the coupon code is valid for a given product.
+     * Hmmm...maybe this method should be moved to the Coupon Ctrl instead
+     *
+     * @param  string  $code       The coupon code.
+     * @param  integer $product_id The ID of the product.
+     * @return boolean True if the coupon is valid, false otherwise.
+     */
+    public static function is_valid_coupon_code($code, $product_id)
+    {
+        $c = self::get_one_from_code($code);
+
+        // Coupon does not exist or has expired.
+        if ($c === false) {
+            return false;
+        }
+
+        return $c->is_valid($product_id);
+    }
+
+    /**
+     * Get the trial days for a given product.
+     *
+     * @param  MeprProduct|null $prd The optional product object.
+     * @return integer The trial days.
+     */
+    public function get_trial_days($prd = null)
+    {
+        $days = $this->trial_days;
+
+        if ($prd && $this->is_membership_specific) {
+            $membership_id = $prd->ID;
+            $days          = $this->membership_specific[$membership_id]['trial_days'] ?? $days;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_get_trial_days', $days, $this, $prd);
+    }
+
+    /**
+     * Get the trial amount for a given product.
+     *
+     * @param  MeprProduct|null $prd The optional product object.
+     * @return integer The trial amount.
+     */
+    public function get_trial_amount($prd = null)
+    {
+        $amount = $this->trial_amount;
+
+        if ($prd && $this->is_membership_specific) {
+            $membership_id = $prd->ID;
+            $amount        = $this->membership_specific[$membership_id]['trial_amount'] ?? $amount;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_get_trial_amount', $amount, $this, $prd);
+    }
+
+    /**
+     * Get the discount mode for a given product.
+     *
+     * @param  MeprProduct|null $prd The optional product object.
+     * @return string The discount mode.
+     */
+    public function get_discount_mode($prd = null)
+    {
+        $mode = $this->discount_mode;
+
+        if ($prd && $this->is_membership_specific) {
+            $membership_id = $prd->ID;
+            $mode          = $this->membership_specific[$membership_id]['discount_mode'] ?? $mode;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_get_discount_mode', $mode, $this, $prd);
+    }
+
+    /**
+     * Get the discount type for a given product.
+     *
+     * @param  MeprProduct|null $prd The optional product object.
+     * @return string The discount type.
+     */
+    public function get_discount_type($prd = null)
+    {
+        $type = $this->discount_type;
+
+        if ($prd && $this->is_membership_specific) {
+            $membership_id = $prd->ID;
+            $type          = $this->membership_specific[$membership_id]['discount_type'] ?? $type;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_get_discount_type', $type, $this, $prd);
+    }
+
+    /**
+     * Get the first payment discount type for a given product.
+     *
+     * @param  MeprProduct|null $prd The optional product object.
+     * @return string The discount type.
+     */
+    public function get_first_payment_discount_type($prd = null)
+    {
+        $type = $this->first_payment_discount_type;
+
+        if ($prd && $this->is_membership_specific) {
+            $membership_id = $prd->ID;
+            $type          = $this->membership_specific[$membership_id]['first_payment_discount_type'] ?? $type;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_get_first_payment_discount_type', $type, $this, $prd);
+    }
+
+    /**
+     * Gets the coupon's fist payment discount amount
+     *
+     * @param  MeprProduct|null $prd The optional product object.
+     * @return float The first payment discount amount.
+     */
+    public function get_first_payment_discount_amount($prd = null)
+    {
+        $amount = $this->first_payment_discount_amount;
+
+        if ($prd && $this->is_membership_specific) {
+            $membership_id = $prd->ID;
+            $amount        = $this->membership_specific[$membership_id]['first_payment_discount_amount'] ?? $amount;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_get_first_payment_discount_amount', $amount, $this, $prd);
+    }
+
+    /**
+     * Gets the coupon's amount
+     *
+     * @param  MeprProduct|null $prd The optional product object.
+     * @return float The discount amount.
+     */
+    public function get_discount_amount($prd = null)
+    {
+        $amount = $this->discount_amount;
+
+        if ($prd && $this->is_membership_specific) {
+            $membership_id = $prd->ID;
+            $amount        = $this->membership_specific[$membership_id]['discount_amount'] ?? $amount;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_get_discount_amount', $amount, $this, $prd);
+    }
+
+    /**
+     * Apply the discount to a given price.
+     *
+     * @param  float            $price            The original price.
+     * @param  boolean          $is_first_payment Optional. Whether this is the first payment. Default false.
+     * @param  MeprProduct|null $prd              Optional. The product object. Default null.
+     * @return float The discounted price.
+     */
+    public function apply_discount($price, $is_first_payment = false, $prd = null)
+    {
+        if ($is_first_payment && $this->get_discount_mode($prd) === 'first-payment') {
+            $discount_amount = $this->get_first_payment_discount_amount($prd);
+            $discount_type   = $this->get_first_payment_discount_type($prd);
+        } else {
+            $discount_amount = $this->get_discount_amount($prd);
+            $discount_type   = $this->get_discount_type($prd);
+        }
+
+        $value = $price;
+
+        if ($discount_type === 'percent') {
+            $value = ((1 - ($discount_amount / 100)) * $price);
+        } else {
+            $value = ($price - $discount_amount);
+        }
+
+        return MeprUtils::format_float(max($value, 0)); // Must only be precise to 2 points.
+    }
+
+    /**
+     * Applies a trial override where appropriate. $obj must be a MeprProduct or MeprSubscription.
+     *
+     * @param  MeprProduct|MeprSubscription $obj The product or subscription object.
+     * @return void
+     */
+    public function maybe_apply_trial_override(&$obj)
+    {
+        $product = $obj instanceof MeprSubscription ? $obj->product() : $obj;
+        $discount_mode = $this->get_discount_mode($product);
+
+        if ($this->get_discount_type($product) === 'percent' && (int) $this->get_discount_amount($product) === 100) {
+            $obj->trial        = false;
+            $obj->trial_days   = 0;
+            $obj->trial_amount = 0;
+        } elseif ($discount_mode === 'trial-override') {
+            $obj->trial        = true;
+            $obj->trial_days   = $this->get_trial_days($product);
+            $obj->trial_amount = MeprUtils::maybe_round_to_minimum_amount($this->get_trial_amount($product));
+        } elseif ($discount_mode === 'first-payment') {
+            $obj->trial      = true;
+            $obj->trial_days = (($obj instanceof MeprProduct) ? $obj->days_in_my_period() : $obj->days_in_this_period());
+
+            $obj->trial_amount = MeprUtils::maybe_round_to_minimum_amount($this->apply_discount($product->price, true, $product));
+        }
+
+        // Basically, if the subscription does have a trial period
+        // because of a coupon then the trial payment should count as one of the limited cycle payments.
+        if (
+            ($discount_mode === 'trial-override' || $discount_mode === 'first-payment') &&
+            $obj instanceof MeprSubscription &&
+            $obj->trial_amount > 0 &&
+            $obj->limit_cycles &&
+            $obj->limit_cycles_num >= 1 &&
+            $obj->prorated_trial
+        ) {
+            $obj->limit_cycles_num = $obj->limit_cycles_num - 1;
+        }
+    }
+
+    /**
+     * Expire old coupons and clean up the database.
+     *
+     * @return void
+     */
+    public static function expire_old_coupons_and_cleanup_db()
+    {
+        global $wpdb;
+        $date     = time();
+        $last_run = get_option(self::$last_run_str, 0); // Prevents all this code from executing on every page load.
+
+        if (($date - $last_run) > 43200) { // Runs twice a day just to be sure.
+            update_option(self::$last_run_str, $date);
+            $coupons = self::get_all_active_coupons();
+
+            if (!empty($coupons)) {
+                foreach ($coupons as $coupon) {
+                    $expire_on = MeprCouponsHelper::convert_timestamp_to_tz($coupon->expires_on, $coupon->expires_on_timezone);
+                    if ($coupon->should_expire && $date > $expire_on) {
+                        $coupon->mark_as_expired();
+                    }
+                }
+            }
+
+            // While we're in here we should consider deleting auto-draft coupons, waste of db space.
+            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+                $wpdb->prepare(
+                    "DELETE FROM {$wpdb->postmeta}
+                     WHERE post_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_status = 'auto-draft')",
+                    self::$cpt
+                )
+            );
+
+            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+                $wpdb->prepare(
+                    "DELETE FROM {$wpdb->posts}
+                     WHERE post_type = %s AND
+                           post_status = 'auto-draft'",
+                    self::$cpt
+                )
+            );
+        }
+    }
+
+    /**
+     * Mark the coupon as expired.
+     *
+     * @return void
+     */
+    public function mark_as_expired()
+    {
+        $post = [
+            'ID'          => $this->ID,
+            'post_status' => 'trash',
+        ];
+
+        wp_update_post($post);
+    }
+
+    /**
+     * Update the usage count for the coupon.
+     *
+     * @return void
+     */
+    public function update_usage_count()
+    {
+        global $wpdb;
+        $tcount  = 0;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $sqcount = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(DISTINCT subscription_id) FROM {$wpdb->mepr_transactions} WHERE coupon_id = %d AND subscription_id > 0 AND txn_type IN (%s,%s) AND status NOT IN (%s, %s);",
+                $this->ID,
+                MeprTransaction::$payment_str,
+                MeprTransaction::$subscription_confirmation_str,
+                MeprSubscription::$pending_str,
+                MeprTransaction::$failed_str
+            )
+        );
+
+        if ($sqcount) {
+            $tcount += $sqcount;
+        }
+
+        // Query one-time payments next.
+        $lqcount = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->mepr_transactions} WHERE coupon_id = %d AND (subscription_id <= 0 OR subscription_id IS NULL) AND txn_type = %s AND status NOT IN (%s, %s)",
+                $this->ID,
+                MeprTransaction::$payment_str,
+                MeprTransaction::$pending_str,
+                MeprTransaction::$failed_str
+            )
+        );
+
+        if ($lqcount) {
+            $tcount += $lqcount;
+        }
+
+        // Update and store.
+        $this->usage_count = $tcount;
+        $this->store();
+    }
+
+    /**
+     * Store the coupon's metadata in the database.
+     *
+     * @return void
+     */
+    public function store_meta()
+    {
+        update_post_meta($this->ID, self::$use_on_upgrades_str, $this->use_on_upgrades);
+        update_post_meta($this->ID, self::$should_start_str, $this->should_start);
+        update_post_meta($this->ID, self::$should_expire_str, $this->should_expire);
+        update_post_meta($this->ID, self::$starts_on_str, $this->starts_on);
+        update_post_meta($this->ID, self::$expires_on_str, $this->expires_on);
+        update_post_meta($this->ID, self::$usage_count_str, $this->usage_count);
+        update_post_meta($this->ID, self::$usage_amount_str, $this->usage_amount);
+        update_post_meta($this->ID, self::$discount_type_str, $this->discount_type);
+        update_post_meta($this->ID, self::$discount_amount_str, $this->discount_amount);
+        update_post_meta($this->ID, self::$valid_products_str, $this->valid_products);
+        update_post_meta($this->ID, self::$discount_mode_str, $this->discount_mode);
+        update_post_meta($this->ID, self::$trial_days_str, $this->trial_days);
+        update_post_meta($this->ID, self::$trial_amount_str, $this->trial_amount);
+        update_post_meta($this->ID, self::$first_payment_discount_type_str, $this->first_payment_discount_type);
+        update_post_meta($this->ID, self::$first_payment_discount_amount_str, $this->first_payment_discount_amount);
+        update_post_meta($this->ID, self::$expires_on_timezone_str, $this->expire_timezone);
+        update_post_meta($this->ID, self::$start_on_timezone_str, $this->start_timezone);
+        update_post_meta($this->ID, self::$usage_per_user_count_str, $this->usage_per_user_count);
+        update_post_meta($this->ID, self::$usage_per_user_count_timeframe_str, $this->usage_per_user_count_timeframe);
+        update_post_meta($this->ID, self::$is_membership_specific_str, $this->is_membership_specific);
+        update_post_meta($this->ID, self::$membership_specific_str, $this->membership_specific);
+    }
+
+    /**
+     * Get the Stripe Coupon ID.
+     *
+     * @param  string           $gateway_id      The gateway ID.
+     * @param  string           $discount_amount The coupon discount amount.
+     * @param  boolean          $onetime         Whether the coupon is one-time use.
+     * @param  MeprProduct|null $product         The product object.
+     * @return string|false The Stripe Coupon ID or false if not found.
+     */
+    public function get_stripe_coupon_id($gateway_id, $discount_amount, $onetime, $product = null)
+    {
+        $meta_key = sprintf('_mepr_stripe_coupon_id_%s_%s', $gateway_id, $this->terms_hash($discount_amount, $product));
+
+        if ($onetime) {
+            $meta_key = sprintf('_mepr_stripe_onetime_coupon_id_%s_%s', $gateway_id, $this->terms_hash($discount_amount, $product));
+        }
+
+        return get_post_meta($this->ID, $meta_key, true);
+    }
+
+    /**
+     * Set the Stripe Coupon ID.
+     *
+     * @param  string           $gateway_id      The gateway ID.
+     * @param  string           $discount_amount The coupon discount amount.
+     * @param  string           $coupon_id       The Stripe Coupon ID.
+     * @param  boolean          $onetime         Whether the coupon is one-time use.
+     * @param  MeprProduct|null $product         The product object.
+     * @return void
+     */
+    public function set_stripe_coupon_id($gateway_id, $discount_amount, $coupon_id, $onetime, $product = null)
+    {
+        $meta_key = sprintf('_mepr_stripe_coupon_id_%s_%s', $gateway_id, $this->terms_hash($discount_amount, $product));
+
+        if ($onetime) {
+            $meta_key = sprintf('_mepr_stripe_onetime_coupon_id_%s_%s', $gateway_id, $this->terms_hash($discount_amount, $product));
+        }
+
+        update_post_meta($this->ID, $meta_key, $coupon_id);
+    }
+
+    /**
+     * Get the hash of the coupon discount terms
+     *
+     * If this hash changes then a different Stripe Coupon will be created.
+     *
+     * @param  string           $discount_amount The coupon discount amount.
+     * @param  MeprProduct|null $product         The product object.
+     * @return string
+     */
+    private function terms_hash($discount_amount, $product = null)
+    {
+        $terms = [
+            'type'   => $this->get_discount_type($product),
+            'amount' => $discount_amount,
+        ];
+
+        if ($this->get_discount_type($product) !== 'percent') {
+            $mepr_options      = MeprOptions::fetch();
+            $terms['currency'] = $mepr_options->currency_code;
+        }
+
+        return md5(serialize($terms));
+    }
+
+    /**
+     * Delete the Stripe Coupon ID
+     *
+     * @param string $gateway_id The gateway ID.
+     * @param string $coupon_id  The Stripe Coupon ID.
+     */
+    public static function delete_stripe_coupon_id($gateway_id, $coupon_id)
+    {
+        if (!is_string($coupon_id) || $coupon_id === '') {
+            return;
+        }
+
+        global $wpdb;
+
+        $meta_ids = $wpdb->get_col($wpdb->prepare( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+            "SELECT meta_id FROM {$wpdb->postmeta} WHERE meta_key LIKE %s AND meta_value = %s",
+            $wpdb->esc_like('_mepr_stripe_coupon_id_' . $gateway_id) . '%',
+            $coupon_id
+        ));
+
+        if (is_array($meta_ids) && count($meta_ids)) {
+            foreach ($meta_ids as $meta_id) {
+                delete_metadata_by_mid('post', $meta_id);
+            }
+        }
+    }
+    /**
+     * Check if user coupon usage is active.
+     *
+     * @return boolean
+     */
+    public function is_usage_per_user_enabled()
+    {
+        return MeprHooks::apply_filters('mepr_coupon_usage_per_user_enabled', (bool) $this->usage_per_user_count > 0, $this);
+    }
+    /**
+     * Get the user usage count.
+     *
+     * @param  integer $user_id User ID.
+     * @return integer User coupon usage.
+     */
+    public function get_user_coupon_usage($user_id)
+    {
+        if (0 >= $user_id) {
+            return false;
+        }
+        global $wpdb;
+
+        $total_count = 0;
+        $date_query  = '';
+
+        if ('lifetime' !== $this->usage_per_user_count_timeframe) {
+            $date_query = MeprCouponsHelper::get_date_query_from_time_frame($this->usage_per_user_count_timeframe);
+        }
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $subscription_query_count = $wpdb->get_var(
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->prepare(
+                "
+                SELECT COUNT(id)
+                    FROM {$wpdb->mepr_subscriptions}
+                WHERE coupon_id = %d
+                    AND status <> %s
+                    AND user_id = %d
+                $date_query;
+                ",
+                $this->ID,
+                MeprSubscription::$pending_str,
+                $user_id
+            )
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        );
+
+        if ($subscription_query_count) {
+            $total_count += $subscription_query_count;
+        }
+
+        // Query one-time payments next.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $lifetime_query_count = $wpdb->get_var(
+            // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $wpdb->prepare(
+                "
+                SELECT COUNT(*)
+                    FROM {$wpdb->mepr_transactions}
+                WHERE coupon_id = %d
+                    AND (subscription_id <= 0 OR subscription_id IS NULL)
+                    AND txn_type = %s
+                    AND status NOT IN (%s, %s)
+                    AND user_id = %d
+                $date_query;
+                ",
+                $this->ID,
+                MeprTransaction::$payment_str,
+                MeprTransaction::$pending_str,
+                MeprTransaction::$failed_str,
+                $user_id
+            )
+            // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        );
+
+        if ($lifetime_query_count) {
+            $total_count += $lifetime_query_count;
+        }
+
+        return MeprHooks::apply_filters('mepr_coupon_usage_per_user_count', $total_count, $user_id, $this);
+    }
+}

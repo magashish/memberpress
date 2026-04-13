@@ -1,0 +1,11 @@
+.mepr-modal{
+    &-message p{
+        margin: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .mepr-modal{
+        margin: auto;
+    }
+}

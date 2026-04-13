@@ -1,0 +1,23 @@
+{
+    "name": "caseproof/ground-level-insights",
+    "description": "The GroundLevel Insights package.",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Team Caseproof",
+            "email": "developers@caseproof.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "MemberPress\\GroundLevel\\Insights\\": ""
+        }
+    },
+    "require": {
+        "php": ">=7.4",
+        "caseproof/ground-level-container": "^2.2.1",
+        "caseproof/ground-level-in-product-notifications": "^2.2.1",
+        "caseproof/ground-level-mothership": "^2.2.1",
+        "caseproof/ground-level-support": "^2.2.1"
+    }
+}
