@@ -1,6 +1,6 @@
 <?php
 defined('ABSPATH') || exit;
-$hide_keys = ! isset($_GET['display-keys']) && ! isset($_COOKIE['mepr_stripe_display_keys']) && ! defined('MEPR_DISABLE_STRIPE_CONNECT');
+$hide_keys = false;
 ?>
 <?php if (MeprStripeGateway::stripe_connect_status($id) === 'connected' || !$hide_keys) { ?>
 <div class="stripe-checkout-method-select">

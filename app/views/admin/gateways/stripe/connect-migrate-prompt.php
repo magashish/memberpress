@@ -1,15 +1,9 @@
 <?php
 defined('ABSPATH') || exit;
-$hide_refresh_button = ! isset($_GET['display-keys']) && ! isset($_COOKIE['mepr_stripe_display_keys']) && ! defined('MEPR_DISABLE_STRIPE_CONNECT');
 ?>
 
 <?php if (MeprStripeGateway::stripe_connect_status($id) === 'connected') : ?>
     <?php
-    $refresh_url            = add_query_arg([
-        'action'    => 'mepr_stripe_connect_refresh',
-        'method-id' => $id,
-        '_wpnonce'  => wp_create_nonce('stripe-refresh'),
-    ], admin_url('admin-ajax.php'));
     $disconnect_url         = add_query_arg([
         'action'    => 'mepr_stripe_connect_disconnect',
         'method-id' => $id,
@@ -30,107 +24,22 @@ $hide_refresh_button = ! isset($_GET['display-keys']) && ! isset($_COOKIE['mepr_
         ); ?>
     <?php endif; ?>
     &nbsp;
-    <span <?php echo $hide_refresh_button ? 'class="mepr-hidden"' : ''; ?>>
-    <a href="<?php echo esc_url($refresh_url); ?>"
-       class="stripe-btn  mepr_stripe_refresh_button button-secondary"><?php esc_html_e('Refresh Stripe Credentials', 'memberpress'); ?></a></span>
     <a href="<?php echo esc_url($disconnect_url); ?>" class="stripe-btn mepr_stripe_disconnect_button button-secondary"
        data-disconnect-msg="<?php echo esc_attr($disconnect_confirm_msg); ?>">
       <?php esc_html_e('Disconnect', 'memberpress'); ?>
     </a>
   </div>
-<?php elseif (! MeprStripeGateway::is_stripe_connect($id) && MeprStripeGateway::keys_are_set($id)) : ?>
-  <div id="mepr-stripe-connect-migrate-prompt" class="mepr-payment-option-prompt">
-    <div><img width="200px" src="<?php echo esc_url(MEPR_IMAGES_URL . '/Stripe_with_Tagline.svg'); ?>" alt="Stripe logo"/></div>
-    <p class="mepr-stripe-setting-promo"><b><?php esc_html_e("Connect with the world's most powerful and easy to use Payment Gateway", 'memberpress'); ?></b></p>
-    <table class="stripe-feature-list" width="500px">
-      <tr>
-        <td>
-          <ul class="stripe-features">
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept all Major Credit Cards', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Flexible subscriptions and billing terms', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('25+ ways to pay', 'memberpress'); ?></li>
-          </ul>
-        </td>
-        <td>
-          <ul class="stripe-features">
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept Apple Pay', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept Google Wallet', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Fraud prevention tools', 'memberpress'); ?></li>
-          </ul>
-        </td>
-      </tr>
-    </table>
-    <p>
-      <a href="<?php echo esc_url($stripe_connect_url); ?>">
-        <img src="<?php echo esc_url(MEPR_IMAGES_URL . '/stripe-connect.png'); ?>" width="200" alt="<?php esc_attr_e('"Connect with Stripe" button', 'memberpress'); ?>">
-      </a>
-    </p>
-  </div>
-<?php elseif (MeprStripeGateway::stripe_connect_status($id) === 'disconnected') : ?>
-  <div id="mepr-stripe-connect-migrate-prompt" class="mepr-payment-option-prompt">
-    <p><strong><?php esc_html_e('Re-Connect to Stripe', 'memberpress'); ?></strong></p>
-    <p><?php esc_html_e('This Payment Method has been disconnected so it may stop working for new and recurring payments at any time. To prevent this, re-connect your Stripe account by clicking the "Connect with Stripe" button below.', 'memberpress'); ?></p>
-    <p>
-      <a href="<?php echo esc_url($stripe_connect_url); ?>">
-        <img src="<?php echo esc_url(MEPR_IMAGES_URL . '/stripe-connect.png'); ?>" width="200" alt="<?php esc_attr_e('"Connect with Stripe" button', 'memberpress'); ?>">
-      </a>
-    </p>
-  </div>
-    <?php
-
-    // THIS IS A NEW PAYMENT METHOD.
-    ?>
-<?php elseif (!MeprStripeGateway::keys_are_set($id)) : ?>
-  <div id="mepr-stripe-connect-migrate-prompt" class="mepr-payment-option-prompt">
-    <div><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Stripe_with_Tagline.svg'); ?>" alt="Stripe logo"/></div>
-    <table class="stripe-feature-list" width="500px">
-      <tr>
-        <td>
-          <ul class="stripe-features">
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept all Major Credit Cards', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Flexible subscriptions and billing terms', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('25+ ways to pay', 'memberpress'); ?></li>
-          </ul>
-        </td>
-        <td>
-          <ul class="stripe-features">
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept Apple Pay', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept Google Wallet', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Fraud prevention tools', 'memberpress'); ?></li>
-          </ul>
-        </td>
-      </tr>
-    </table>
-    <a href="" data-id="<?php echo esc_attr($id); ?>" data-href="<?php echo esc_url($stripe_connect_url); ?>" data-nonce="<?php echo esc_attr(wp_create_nonce('new-stripe-connect')); ?>" class="mepr-stripe-connect-new">
-        <img src="<?php echo esc_url(MEPR_IMAGES_URL . '/stripe-connect.png'); ?>" width="200" alt="<?php esc_attr_e('"Connect with Stripe" button', 'memberpress'); ?>">
-      </a>
-    </p>
-  </div>
 <?php else : ?>
   <div id="mepr-stripe-connect-migrate-prompt" class="mepr-payment-option-prompt">
     <div><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Stripe_with_Tagline.svg'); ?>" alt="Stripe logo"/></div>
-    <p class="mepr-stripe-setting-promo"><b><?php esc_html_e("Connect with the world's most powerful and easy to use Payment Gateway", 'memberpress'); ?></b></p>
-    <table class="stripe-feature-list" width="500px">
-      <tr>
-        <td>
-          <ul class="stripe-features">
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept all Major Credit Cards', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Flexible subscriptions and billing terms', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('25+ ways to pay', 'memberpress'); ?></li>
-          </ul>
-        </td>
-        <td>
-          <ul class="stripe-features">
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept Apple Pay', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Accept Google Wallet', 'memberpress'); ?></li>
-            <li><img src="<?php echo esc_url(MEPR_IMAGES_URL . '/Check_Mark.svg'); ?>" alt=""><?php esc_html_e('Fraud prevention tools', 'memberpress'); ?></li>
-          </ul>
-        </td>
-      </tr>
-    </table>
-      <a href="<?php echo esc_url($stripe_connect_url); ?>">
-        <img src="<?php echo esc_url(MEPR_IMAGES_URL . '/stripe-connect.png'); ?>" width="200" alt="<?php esc_attr_e('"Connect with Stripe" button', 'memberpress'); ?>">
-      </a>
-    </p>
+    <p><?php esc_html_e('Enter your Stripe API keys below to connect your Stripe account.', 'memberpress'); ?></p>
+    <p><?php
+      printf(
+        // Translators: %1$s opening anchor, %2$s closing anchor.
+        esc_html__('You can find your API keys in the %1$sStripe Dashboard%2$s under Developers &rarr; API keys.', 'memberpress'),
+        '<a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer">',
+        '</a>'
+      );
+    ?></p>
   </div>
 <?php endif; ?>
