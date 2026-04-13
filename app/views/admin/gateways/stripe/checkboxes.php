@@ -1,11 +1,10 @@
 <?php
 defined('ABSPATH') || exit;
-$hide_webhook_url = ! isset($_GET['display-keys']) && ! isset($_COOKIE['mepr_stripe_display_keys']) && ! defined('MEPR_DISABLE_STRIPE_CONNECT');
+$hide_webhook_url = false;
 ?>
 
 <table class="form-table">
   <tbody>
-    <?php if (MeprStripeGateway::is_stripe_connect($id) || MeprStripeGateway::keys_are_set($id)) : ?>
       <tr valign="top">
         <th scope="row"><label for="<?php echo esc_attr($test_mode_str); ?>"><?php esc_html_e('Test Mode', 'memberpress'); ?></label></th>
         <td><input class="mepr-stripe-testmode" data-integration="<?php echo esc_attr($id); ?>" type="checkbox" name="<?php echo esc_attr($test_mode_str); ?>"<?php echo checked($test_mode); ?> <?php disabled((defined('MEMBERPRESS_STRIPE_TESTING') && MEMBERPRESS_STRIPE_TESTING));?> /></td>
@@ -79,7 +78,6 @@ $hide_webhook_url = ! isset($_GET['display-keys']) && ! isset($_COOKIE['mepr_str
           </th>
         </tr>
         <?php endif; ?>
-    <?php endif; ?>
     <tr valign="top" <?php echo MeprStripeGateway::is_stripe_connect($id) || empty($live_public_key) ? 'style="display:none;"' : ''; ?>>
       <th scope="row"><label for="<?php echo esc_attr($force_ssl_str); ?>"><?php esc_html_e('Force SSL', 'memberpress'); ?></label></th>
       <td><input type="checkbox" name="<?php echo esc_attr($force_ssl_str); ?>"<?php echo checked($force_ssl); ?> /></td>
