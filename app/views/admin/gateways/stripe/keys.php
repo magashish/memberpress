@@ -40,7 +40,7 @@ $hide_keys = false;
       </tr>
       <tr valign="top">
         <th scope="row"><label for="<?php echo esc_attr($test_secret_key_str); ?>"><?php esc_html_e('Test Secret Key*:', 'memberpress'); ?></label></th>
-        <td><input type="text" class="mepr-auto-trim" name="<?php echo esc_attr($test_secret_key_str); ?>" value="<?php echo esc_attr($test_secret_key); ?>" /></td>
+        <td><input type="password" class="mepr-auto-trim" name="<?php echo esc_attr($test_secret_key_str); ?>" value="<?php echo esc_attr($test_secret_key); ?>" autocomplete="new-password" /></td>
       </tr>
     </tbody>
   </table>
@@ -52,7 +52,7 @@ $hide_keys = false;
       </tr>
       <tr valign="top">
         <th scope="row"><label for="<?php echo esc_attr($live_secret_key_str); ?>"><?php esc_html_e('Live Secret Key*:', 'memberpress'); ?></label></th>
-        <td><input type="text" class="mepr-auto-trim" name="<?php echo esc_attr($live_secret_key_str); ?>" value="<?php echo esc_attr($live_secret_key); ?>" /></td>
+        <td><input type="password" class="mepr-auto-trim" name="<?php echo esc_attr($live_secret_key_str); ?>" value="<?php echo esc_attr($live_secret_key); ?>" autocomplete="new-password" /></td>
       </tr>
     </tbody>
   </table>
