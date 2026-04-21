@@ -1689,18 +1689,21 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
     public function process_stripe_checkout_session_completed($checkout_session)
     {
         if (empty($checkout_session->id) || empty($checkout_session->customer)) {
+            error_log('MeprStripe: checkout_session_completed early exit - missing id or customer. id=' . ($checkout_session->id ?? 'null'));
             return;
         }
 
         $txn_res = MeprTransaction::get_one_by_trans_num($checkout_session->id);
 
         if (empty($txn_res) || !isset($txn_res->id)) {
+            error_log('MeprStripe: checkout_session_completed early exit - txn not found for cs_id=' . $checkout_session->id);
             return;
         }
 
         $txn = new MeprTransaction($txn_res->id);
 
         if (empty($txn->id) || $txn->gateway !== $this->id) {
+            error_log('MeprStripe: checkout_session_completed early exit - txn gateway mismatch. txn_gateway=' . $txn->gateway . ' this_id=' . $this->id);
             return;
         }
 
@@ -1848,11 +1851,14 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
                         // Resolve charge from latest_invoice.charge or latest_invoice.payment_intent.latest_charge
                         // (newer Stripe API versions attach charges to the payment_intent instead).
                         $stripe_charge = null;
+                        error_log('MeprStripe: charge=' . json_encode($checkout_session->subscription['latest_invoice']['charge'] ?? null));
+                        error_log('MeprStripe: latest_charge=' . json_encode($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'] ?? null));
                         if (!empty($checkout_session->subscription['latest_invoice']['charge']) && is_array($checkout_session->subscription['latest_invoice']['charge'])) {
                             $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['charge'];
                         } elseif (!empty($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge']) && is_array($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'])) {
                             $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'];
                         }
+                        error_log('MeprStripe: stripe_charge resolved=' . ($stripe_charge ? $stripe_charge->id : 'null'));
 
                         if ($stripe_charge !== null) {
                             $charge = $stripe_charge;
