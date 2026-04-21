@@ -1712,6 +1712,7 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
                     'setup_intent.payment_method',
                     'subscription.default_payment_method',
                     'subscription.latest_invoice.charge',
+                    'subscription.latest_invoice.payment_intent.latest_charge',
                     'subscription.latest_invoice.payment_intent.payment_method',
                 ],
             ], 'get');
@@ -1844,17 +1845,30 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
                         $this->record_cc_vars($sub, $payment_method);
                         $this->record_create_sub($sub);
 
-                        if (isset($checkout_session->subscription['latest_invoice']['charge'])) {
-                            $charge                  = (object) $checkout_session->subscription['latest_invoice']['charge'];
-                            $amount                  = (float) $charge->amount;
-                            $txn_expires_at_override = null;
+                        // Resolve charge from latest_invoice.charge or latest_invoice.payment_intent.latest_charge
+                        // (newer Stripe API versions attach charges to the payment_intent instead).
+                        $stripe_charge = null;
+                        if (!empty($checkout_session->subscription['latest_invoice']['charge']) && is_array($checkout_session->subscription['latest_invoice']['charge'])) {
+                            $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['charge'];
+                        } elseif (!empty($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge']) && is_array($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'])) {
+                            $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'];
+                        }
+
+                        if ($stripe_charge !== null) {
+                            $charge = $stripe_charge;
+                            $amount = (float) $charge->amount;
 
                             if (!self::is_zero_decimal_currency()) {
                                 $amount = $amount / 100;
                             }
 
-                            if ($sub->trial && $sub->trial_days > 0) {
+                            // Use Stripe's current_period_end as the authoritative expiry date.
+                            if (!empty($checkout_session->subscription['current_period_end']) && (!$sub->trial || $sub->trial_days <= 0)) {
+                                $txn_expires_at_override = MeprUtils::ts_to_mysql_date($checkout_session->subscription['current_period_end'], 'Y-m-d 23:59:59');
+                            } elseif ($sub->trial && $sub->trial_days > 0) {
                                 $txn_expires_at_override = MeprUtils::ts_to_mysql_date(time() + MeprUtils::days($sub->trial_days), 'Y-m-d 23:59:59');
+                            } else {
+                                $txn_expires_at_override = null;
                             }
 
                             $this->record_sub_payment($sub, $amount, $charge->id, $this->get_card($payment_method), $txn_expires_at_override);
