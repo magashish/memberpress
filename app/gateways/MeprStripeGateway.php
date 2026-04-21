@@ -1686,24 +1686,32 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
      * @throws MeprGatewayException When session processing fails.
      * @return void
      */
+    private function mepr_debug_log($message) {
+        $log_file = WP_CONTENT_DIR . '/mepr-stripe-debug.log';
+        $line     = '[' . gmdate('Y-m-d H:i:s') . '] ' . $message . "\n";
+        file_put_contents($log_file, $line, FILE_APPEND | LOCK_EX);
+        $stored   = get_option('mepr_stripe_debug', '');
+        update_option('mepr_stripe_debug', $stored . $line, false);
+    }
+
     public function process_stripe_checkout_session_completed($checkout_session)
     {
         if (empty($checkout_session->id) || empty($checkout_session->customer)) {
-            error_log('MeprStripe: checkout_session_completed early exit - missing id or customer. id=' . ($checkout_session->id ?? 'null'));
+            $this->mepr_debug_log('EXIT: missing id or customer. id=' . ($checkout_session->id ?? 'null'));
             return;
         }
 
         $txn_res = MeprTransaction::get_one_by_trans_num($checkout_session->id);
 
         if (empty($txn_res) || !isset($txn_res->id)) {
-            error_log('MeprStripe: checkout_session_completed early exit - txn not found for cs_id=' . $checkout_session->id);
+            $this->mepr_debug_log('EXIT: txn not found for cs_id=' . $checkout_session->id);
             return;
         }
 
         $txn = new MeprTransaction($txn_res->id);
 
         if (empty($txn->id) || $txn->gateway !== $this->id) {
-            error_log('MeprStripe: checkout_session_completed early exit - txn gateway mismatch. txn_gateway=' . $txn->gateway . ' this_id=' . $this->id);
+            $this->mepr_debug_log('EXIT: gateway mismatch. txn_gateway=' . $txn->gateway . ' this_id=' . $this->id);
             return;
         }
 
@@ -1851,14 +1859,14 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
                         // Resolve charge from latest_invoice.charge or latest_invoice.payment_intent.latest_charge
                         // (newer Stripe API versions attach charges to the payment_intent instead).
                         $stripe_charge = null;
-                        error_log('MeprStripe: charge=' . json_encode($checkout_session->subscription['latest_invoice']['charge'] ?? null));
-                        error_log('MeprStripe: latest_charge=' . json_encode($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'] ?? null));
+                        $this->mepr_debug_log('charge=' . json_encode($checkout_session->subscription['latest_invoice']['charge'] ?? null));
+                        $this->mepr_debug_log('pi.latest_charge=' . json_encode($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'] ?? null));
                         if (!empty($checkout_session->subscription['latest_invoice']['charge']) && is_array($checkout_session->subscription['latest_invoice']['charge'])) {
                             $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['charge'];
                         } elseif (!empty($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge']) && is_array($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'])) {
                             $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'];
                         }
-                        error_log('MeprStripe: stripe_charge resolved=' . ($stripe_charge ? $stripe_charge->id : 'null'));
+                        $this->mepr_debug_log('stripe_charge=' . ($stripe_charge ? $stripe_charge->id : 'NULL - no transaction will be created'));
 
                         if ($stripe_charge !== null) {
                             $charge = $stripe_charge;
