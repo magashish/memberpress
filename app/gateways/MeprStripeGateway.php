@@ -1899,6 +1899,7 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
                 }
             }
         } catch (Exception $e) {
+            $this->mepr_debug_log('EXCEPTION: ' . get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             http_response_code(500);
             wp_die(esc_html($e->getMessage()));
         }
