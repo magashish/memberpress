@@ -1722,7 +1722,6 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
                     'payment_intent.payment_method',
                     'setup_intent.payment_method',
                     'subscription.default_payment_method',
-                    'subscription.latest_invoice.charge',
                     'subscription.latest_invoice.payment_intent.latest_charge',
                     'subscription.latest_invoice.payment_intent.payment_method',
                 ],
@@ -1856,14 +1855,10 @@ class MeprStripeGateway extends MeprBaseRealAjaxGateway
                         $this->record_cc_vars($sub, $payment_method);
                         $this->record_create_sub($sub);
 
-                        // Resolve charge from latest_invoice.charge or latest_invoice.payment_intent.latest_charge
-                        // (newer Stripe API versions attach charges to the payment_intent instead).
+                        // Resolve charge from payment_intent.latest_charge (Stripe API 2022-11-15+).
                         $stripe_charge = null;
-                        $this->mepr_debug_log('charge=' . json_encode($checkout_session->subscription['latest_invoice']['charge'] ?? null));
                         $this->mepr_debug_log('pi.latest_charge=' . json_encode($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'] ?? null));
-                        if (!empty($checkout_session->subscription['latest_invoice']['charge']) && is_array($checkout_session->subscription['latest_invoice']['charge'])) {
-                            $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['charge'];
-                        } elseif (!empty($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge']) && is_array($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'])) {
+                        if (!empty($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge']) && is_array($checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'])) {
                             $stripe_charge = (object) $checkout_session->subscription['latest_invoice']['payment_intent']['latest_charge'];
                         }
                         $this->mepr_debug_log('stripe_charge=' . ($stripe_charge ? $stripe_charge->id : 'NULL - no transaction will be created'));
